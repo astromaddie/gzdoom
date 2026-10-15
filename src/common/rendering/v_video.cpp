@@ -94,7 +94,15 @@ CUSTOM_CVAR(Int, vid_maxfps, 500, CVAR_ARCHIVE | CVAR_GLOBALCONFIG)
 	}
 }
 
-CUSTOM_CVAR(Int, vid_preferbackend, 0, CVAR_ARCHIVE | CVAR_GLOBALCONFIG | CVAR_NOINITCALL)
+#ifdef QZD_STEAM_FRAME
+// The OpenGL ES ("OpenGL Lite") backend: on the Steam Frame the OpenGL one waits for
+// the GPU at the end of every frame (gl_pipeline_depth 0) and can't hold 72 Hz with
+// Voxel Doom at 2160x2160, where this one holds 120 Hz
+#define QZD_DEFAULT_BACKEND 2
+#else
+#define QZD_DEFAULT_BACKEND 0
+#endif
+CUSTOM_CVAR(Int, vid_preferbackend, QZD_DEFAULT_BACKEND, CVAR_ARCHIVE | CVAR_GLOBALCONFIG | CVAR_NOINITCALL)
 {
 	// [SP] This may seem pointless - but I don't want to implement live switching just
 	// yet - I'm pretty sure it's going to require a lot of reinits and destructions to
