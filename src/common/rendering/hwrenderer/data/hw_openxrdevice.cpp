@@ -132,6 +132,21 @@ extern float cinemamodeYaw;
 extern float cinemamodePitch;
 
 bool TBXR_FrameSetup();
+#ifdef QZD_STEAM_FRAME
+float TBXR_GetRuntimeIPD();
+
+// The eye separation from the runtime's eye poses this frame (vr_ipd is a fixed 64 mm)
+static float eyeSeparation()
+{
+    const float ipd = TBXR_GetRuntimeIPD();
+    return ipd > 0.03f && ipd < 0.09f ? ipd : (float)vr_ipd;
+}
+#else
+static float eyeSeparation()
+{
+    return vr_ipd;
+}
+#endif
 void TBXR_prepareEyeBuffer(int eye );
 void TBXR_finishEyeBuffer(int eye );
 void TBXR_submitFrame();
@@ -209,7 +224,7 @@ namespace s3d
         vec3_t v_forward, v_right, v_up;
         AngleVectors(angles, v_forward, v_right, v_up);
 
-        float stereo_separation = (vr_ipd * 0.5) * vr_vunits_per_meter * (eye == 0 ? -1.0 : 1.0);
+        float stereo_separation = (eyeSeparation() * 0.5) * vr_vunits_per_meter * (eye == 0 ? -1.0 : 1.0);
         vec3_t tmp;
         VectorScale(v_right, stereo_separation, tmp);
 
@@ -270,7 +285,7 @@ namespace s3d
         VSMatrix new_projection;
         new_projection.loadIdentity();
 
-        float stereo_separation = (vr_ipd * 0.5) * vr_vunits_per_meter * getHUDValue<FFloatCVarRef>(vr_automap_stereo, vr_hud_stereo) * (eye == 1 ? -1.0 : 1.0);
+        float stereo_separation = (eyeSeparation() * 0.5) * vr_vunits_per_meter * getHUDValue<FFloatCVarRef>(vr_automap_stereo, vr_hud_stereo) * (eye == 1 ? -1.0 : 1.0);
         new_projection.translate(stereo_separation, 0, 0);
 
         // doom_units from meters

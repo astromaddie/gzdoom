@@ -162,6 +162,13 @@ static struct SteamAppInfo
 	{"DOOM 3 BFG Edition/base/wads", 208200},
 	{"Strife", 317040},
 	{"Ultimate Doom/rerelease/DOOM_Data/StreamingAssets", 2280},
+#ifdef QZD_STEAM_FRAME
+	// DOOM + DOOM II (2024): the KEX rerelease's IWADs, then the original ones
+	{"Ultimate Doom/rerelease", 2280},
+	{"Ultimate Doom/base/doom2", 2280},
+	{"Ultimate Doom/base/tnt", 2280},
+	{"Ultimate Doom/base/plutonia", 2280},
+#endif
 	{"Doom 2/rerelease/DOOM II_Data/StreamingAssets", 2300},
 	{"Doom 2/finaldoombase", 2300},
     {"Master Levels of Doom/doom2", 9160}
@@ -189,6 +196,32 @@ TArray<FString> I_GetSteamPath()
 	}
 
 	SteamInstallFolders.Push(appSupportPath + "/Steam/steamapps/common");
+#elif defined(QZD_STEAM_FRAME)
+	// The Frame's Android container sees the headset's Steam library at its own
+	// path, read only. Other libraries are listed in libraryfolders.vdf.
+	{
+		const char* steamRoot = "/home/steamos/.local/share/Steam";
+		SteamInstallFolders.Push(FStringf("%s/steamapps/common", steamRoot));
+
+		FStringf libraries("%s/steamapps/libraryfolders.vdf", steamRoot);
+		if (FILE* f = fopen(libraries.GetChars(), "r"))
+		{
+			char line[1024];
+			while (fgets(line, sizeof(line), f))
+			{
+				// lines like: "path"		"/run/media/steamos/card"
+				char* key = strstr(line, "\"path\"");
+				if (key == nullptr) continue;
+				char* open = strchr(key + 6, '"');
+				char* close = open ? strchr(open + 1, '"') : nullptr;
+				if (open == nullptr || close == nullptr) continue;
+				FString path(open + 1, close - open - 1);
+				if (path.Compare(steamRoot) != 0)
+					SteamInstallFolders.Push(path + "/steamapps/common");
+			}
+			fclose(f);
+		}
+	}
 #else
 	char* home = getenv("HOME");
 	if(home != NULL && *home != '\0')

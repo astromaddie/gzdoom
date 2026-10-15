@@ -560,6 +560,7 @@ QZDOOM_SRC = \
    ../../QzDoom/OpenXrInput.cpp \
    ../../QzDoom/VrInputCommon.cpp \
    ../../QzDoom/VrInputDefault.cpp \
+   ../../QzDoom/VrFrame.cpp \
    ../../QzDoom/mathlib.c \
    ../../QzDoom/matrixlib.c \
    ../../QzDoom/argtable3.c
