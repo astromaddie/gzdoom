@@ -402,6 +402,11 @@ float FVoxelModel::getAspectFactor(float stretch)
 
 void FVoxelModel::RenderFrame(FModelRenderer *renderer, FGameTexture * skin, int frame, int frame2, double inter, FTranslationID translation, const FTextureID*, int boneStartPosition)
 {
+#ifdef QZD_STEAM_FRAME
+	// A .kvx loaded through MODELDEF has no skin (only VOXELDEF sets the palette
+	// texture as one), which crashed in SetMaterial: use the voxel's own palette
+	if (skin == nullptr) skin = TexMan.GetGameTexture(mPalette);
+#endif
 	renderer->SetMaterial(skin, true, translation);
 	renderer->SetupFrame(this, 0, 0, 0, -1);
 	renderer->DrawElements(mNumIndices, 0);
