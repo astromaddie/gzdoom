@@ -1886,6 +1886,12 @@ static void ParseCommandLineFile()
 	auto *profileInfo = profileManager.GetProfileInfo(profile);
 	FString profilePath;
 	profilePath.Format("%scommandline.txt", progdir.GetChars());
+#ifdef QZD_STEAM_FRAME
+	// progdir comes from Java without the trailing slash
+	FString progdirSlash = progdir;
+	if (progdirSlash.IsNotEmpty() && progdirSlash.Back() != '/') progdirSlash += '/';
+	profilePath.Format("%scommandline.txt", progdirSlash.GetChars());
+#endif
 	if (profileInfo != nullptr && profileInfo->mPath.IsNotEmpty())
 	{
 		profilePath = profileInfo->mPath;
@@ -1896,6 +1902,26 @@ static void ParseCommandLineFile()
 	{
 		return;
 	}
+
+#ifdef QZD_STEAM_FRAME
+	// The next launch reads commandline.txt (in Java, before the engine): make it
+	// this profile's, as the Android restart does on the Quest
+	if (profileInfo != nullptr && profileInfo->mPath.IsNotEmpty())
+	{
+		FString target;
+		target.Format("%scommandline.txt", progdirSlash.GetChars());
+		if (target.CompareNoCase(profilePath) != 0)
+		{
+			auto data = file.Read();
+			file.Seek(0, FileReader::SeekSet);
+			if (FILE* out = fopen(target.GetChars(), "wb"))
+			{
+				fwrite(data.data(), 1, data.size(), out);
+				fclose(out);
+			}
+		}
+	}
+#endif
 
 	TArray<uint8_t> readbuf;
 	FCmdFile cmdfile(profilePath.GetChars());
@@ -3928,12 +3954,14 @@ static int D_DoomMain_Internal (void)
 		// 
 		// Clean up after a restart
 		//
-#ifdef USE_OPENXR
+#if defined(USE_OPENXR) && !defined(QZD_STEAM_FRAME)
 		// We replace the vanilla zdoom restart with a complete Android application restart instead
 		// all the arguments passed are retained since we read the commandline file again.
 		InitShutdown();
 		QzDoom_Restart();
 #else
+		// (Steam Frame: restart in place like the PC build. The Android container there
+		// treats the app's process going away as the game quitting.)
 		D_Cleanup();
 
 		gamestate = GS_STARTUP;
