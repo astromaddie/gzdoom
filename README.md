@@ -1,3 +1,23 @@
+## Steam Frame
+
+This is the engine dependency for [FrameZDoom](https://github.com/astromaddie/FrameZDoom/blob/steam-frame/README.md).
+The Frame engine changes are on [`steam-frame`](https://github.com/astromaddie/gzdoom/tree/steam-frame);
+the default `questzdoom` branch keeps the upstream engine.
+
+To build the Frame app, start in FrameZDoom. Its Android project, OpenXR integration,
+controller setup and installer build around this engine. Cloning the parent with
+submodules selects the engine revision it expects:
+
+```sh
+git clone --recurse-submodules --branch steam-frame https://github.com/astromaddie/FrameZDoom.git
+cd FrameZDoom
+```
+
+Follow [FrameZDoom's build instructions](https://github.com/astromaddie/FrameZDoom/blob/steam-frame/README.md#building)
+for the SDK and APK. You need your own WADs. The upstream engine README follows.
+
+---
+
 # QuestZDoom fork of LZDoom for Oculus Quest VR port!
 
 [![Build Status](https://github.com/emawind84/gzdoom/actions/workflows/continuous_integration.yml/badge.svg?branch=questzdoom)](https://github.com/emawind84/gzdoom/actions/workflows/continuous_integration.yml)
